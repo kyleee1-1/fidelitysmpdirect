@@ -33,58 +33,75 @@ body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:c
 .mc-shr:hover{background:rgba(255,255,255,.13);transform:translateY(-1px)}
 .mc-shr svg{width:18px;height:18px;stroke:#fff}
 .mc-note{padding:10px 20px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:.78em;color:rgba(255,255,255,.4);line-height:1.5}
-.mc-wlink{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:20px;font-size:.85em;font-weight:600;text-decoration:none;border:1px solid rgba(37,211,102,.3);background:rgba(37,211,102,.1);color:#4edc7e;transition:background .18s,transform .15s}
-.mc-wlink:hover{background:rgba(37,211,102,.18);transform:translateY(-1px)}
 </style>
 </head>
 <body>
-<!-- <div class="vocaroo-container">
-        <iframe width="300" height="60" src="https://vocaroo.com/embed/1oiqly99Tf2e?autoplay=1" frameborder="0" allow="autoplay"></iframe>
-    </div>
- -->
 <div class="mc-card">
   <div class="mc-head">
     <div class="mc-thumb"></div>
     <div class="mc-hinfo">
-      <div class="mc-name" id="BS_FW4"></div>
-      <div class="mc-desc" id="BS_FW5"></div>
-      <div class="mc-addr" id="BS_FW2"></div>
+      <div class="mc-name" id="mc-name"></div>
+      <div class="mc-desc" id="mc-desc"></div>
+      <div class="mc-addr" id="mc-addr"></div>
       <div class="mc-acts">
-        <a class="mc-bbtn" id="BS_FW1" href="#">Join Fidelity SMP</a>
+        <a class="mc-bbtn" id="mc-join" href="#">Add to Minecraft</a>
+        <!-- FIX: share button now exists in HTML with correct id -->
+        <div class="mc-shr" id="mc-share" title="Share">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
-  <div class="mc-note">Press the button above to add the server !</div>
-  <div class="mc-note" id="BS_FW6"></div>
+  <div class="mc-note">Tap the button above to add the server directly to Minecraft Bedrock!</div>
+</div>
 
 <script>
-const SN1='Fidelity SMP [Bedrock Edition]';
-const SU1='fidelity.minecraft.casa';
-const SP1='25711';
-const SD1='A 30-Years Project <3';
-const WA1='';
+const SN = 'Fidelity SMP [Bedrock Edition]';
+const SU = 'fidelity.minecraft.casa';
+const SP = '25711';
+const SD = 'A 30-Years Project <3';
 
-document.title=SN1;
-document.getElementById('BS_FW4').textContent=SN1;
-document.getElementById('BS_FW5').textContent=SD1;
+const URI = `minecraft:?addExternalServer=${encodeURIComponent(SN)}|${SU}:${SP}`;
 
-const URI1=`minecraft:?addExternalServer=${encodeURIComponent(SN1)}|${SU1}:${SP1}`;
-document.getElementById('BS_FW1').href=URI1;
-window.location.href=URI1;
+document.title = SN;
+document.getElementById('mc-name').textContent = SN;
+document.getElementById('mc-desc').textContent = SD;
 
-const AD1=document.getElementById('BS_FW2');
-AD1.textContent=`${SU1}:${SP1}`;
-AD1.onclick=()=>{
-  navigator.clipboard.writeText(`${SU1}:${SP1}`);
-  AD1.classList.add('cp');
-  AD1.textContent='Copiado';
-  setTimeout(()=>{AD1.classList.remove('cp');AD1.textContent=`${SU1}:${SP1}`},1500);
+const joinBtn = document.getElementById('mc-join');
+joinBtn.href = URI;
+
+// Copy address to clipboard on click
+const addrEl = document.getElementById('mc-addr');
+addrEl.textContent = `${SU}:${SP}`;
+addrEl.onclick = () => {
+  navigator.clipboard.writeText(`${SU}:${SP}`).then(() => {
+    addrEl.classList.add('cp');
+    addrEl.textContent = 'Copied!';
+    setTimeout(() => {
+      addrEl.classList.remove('cp');
+      addrEl.textContent = `${SU}:${SP}`;
+    }, 1500);
+  });
 };
 
-document.getElementById('BS_FW3').onclick=()=>{
-  navigator.share({text:`Unite a mi servidor de Minecraft en ${window.location.href}`});
+// FIX: share button element now exists, so this no longer throws
+document.getElementById('mc-share').onclick = () => {
+  if (navigator.share) {
+    navigator.share({ text: `Join my Minecraft server at ${window.location.href}` });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert('Link copied!');
+  }
 };
+
+// Auto-trigger the minecraft: URI on page load (works on mobile)
+window.location.href = URI;
 </script>
-
 </body>
 </html>
