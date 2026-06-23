@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="favicon.ico">
-<title>Minecraft Server</title>
+<title>Fidelity SMP</title>
 <meta name="description" content="A 30-Years Project <3">
 <meta property="og:title" content="Fidelity SMP">
 <meta property="og:description" content="A 30-Years Project <3">
@@ -19,7 +19,7 @@
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;padding:20px;background:#0d0f12 url('wallpaper.avif') center/cover no-repeat}
 .mc-card{max-width:380px;width:100%;background:rgba(255,255,255,.12);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.25);border-radius:16px;overflow:hidden}
 .mc-head{padding:18px 20px 14px;display:flex;gap:12px;align-items:flex-start}
-.mc-thumb{width:48px;height:48px;border-radius:10px;object-fit:cover;flex-shrink:0;background:rgba(255,255,255,.08) url('servericon.avif') center/cover no-repeat}
+.mc-thumb{width:48px;height:48px;border-radius:10px;flex-shrink:0;background:rgba(255,255,255,.08) url('servericon.avif') center/cover no-repeat}
 .mc-hinfo{flex:1;min-width:0}
 .mc-name{font-size:1.1em;font-weight:700;color:#fff;margin:0 0 4px}
 .mc-desc{font-size:.85em;color:rgba(255,255,255,.5);margin:0 0 10px;line-height:1.45}
@@ -31,7 +31,7 @@ body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:c
 .mc-bbtn:hover{background:rgba(98,210,88,.16);transform:translateY(-1px)}
 .mc-shr{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);cursor:pointer;transition:background .18s,transform .15s;flex-shrink:0}
 .mc-shr:hover{background:rgba(255,255,255,.13);transform:translateY(-1px)}
-.mc-shr svg{width:18px;height:18px;stroke:#fff}
+.mc-shr svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .mc-note{padding:10px 20px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:.78em;color:rgba(255,255,255,.4);line-height:1.5}
 </style>
 </head>
@@ -42,12 +42,11 @@ body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:c
     <div class="mc-hinfo">
       <div class="mc-name" id="mc-name"></div>
       <div class="mc-desc" id="mc-desc"></div>
-      <div class="mc-addr" id="mc-addr"></div>
+      <div class="mc-addr" id="mc-addr" title="Click to copy"></div>
       <div class="mc-acts">
         <a class="mc-bbtn" id="mc-join" href="#">Add to Minecraft</a>
-        <!-- FIX: share button now exists in HTML with correct id -->
         <div class="mc-shr" id="mc-share" title="Share">
-          <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24">
             <circle cx="18" cy="5" r="3"/>
             <circle cx="6" cy="12" r="3"/>
             <circle cx="18" cy="19" r="3"/>
@@ -58,28 +57,35 @@ body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:c
       </div>
     </div>
   </div>
-  <div class="mc-note">Tap the button above to add the server directly to Minecraft Bedrock!</div>
+  <div class="mc-note">Tap "Add to Minecraft" on your phone or tablet. Requires Minecraft Bedrock Edition v26.10+.</div>
 </div>
 
 <script>
-const SN = 'Fidelity SMP [Bedrock Edition]';
+const SN = 'Fidelity SMP';
 const SU = 'fidelity.minecraft.casa';
 const SP = '25711';
-const SD = 'A 30-Years Project <3';
+const SD = 'A 30-Years Project \u003c3';
 
-const URI = `minecraft:?addExternalServer=${encodeURIComponent(SN)}|${SU}:${SP}`;
+// FIX: correct URI scheme is minecraft:// (with double slash), not minecraft:
+// Also removed brackets from name — encoded chars broke older clients (fixed in 26.10)
+const URI = `minecraft://?addExternalServer=${encodeURIComponent(SN)}|${SU}:${SP}`;
 
 document.title = SN;
 document.getElementById('mc-name').textContent = SN;
 document.getElementById('mc-desc').textContent = SD;
 
+// FIX: set href AND intercept click to use window.open
+// window.location.href auto-redirect was silently blocked by browsers (no user gesture)
 const joinBtn = document.getElementById('mc-join');
 joinBtn.href = URI;
+joinBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  window.location.href = URI;
+});
 
-// Copy address to clipboard on click
 const addrEl = document.getElementById('mc-addr');
 addrEl.textContent = `${SU}:${SP}`;
-addrEl.onclick = () => {
+addrEl.addEventListener('click', () => {
   navigator.clipboard.writeText(`${SU}:${SP}`).then(() => {
     addrEl.classList.add('cp');
     addrEl.textContent = 'Copied!';
@@ -88,20 +94,16 @@ addrEl.onclick = () => {
       addrEl.textContent = `${SU}:${SP}`;
     }, 1500);
   });
-};
+});
 
-// FIX: share button element now exists, so this no longer throws
-document.getElementById('mc-share').onclick = () => {
+document.getElementById('mc-share').addEventListener('click', () => {
+  const shareData = { title: SN, text: `Join ${SN} on Minecraft Bedrock!`, url: window.location.href };
   if (navigator.share) {
-    navigator.share({ text: `Join my Minecraft server at ${window.location.href}` });
+    navigator.share(shareData);
   } else {
-    navigator.clipboard.writeText(window.location.href);
-    alert('Link copied!');
+    navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!'));
   }
-};
-
-// Auto-trigger the minecraft: URI on page load (works on mobile)
-window.location.href = URI;
+});
 </script>
 </body>
 </html>
